@@ -1,0 +1,109 @@
+public class ArvoreB {
+
+    private No raiz;
+    private int ordem;
+
+    public ArvoreB(int ordem) {
+        this.ordem = ordem;
+        this.raiz = null;
+    }
+
+    public void inserir(String cpf, Cliente cliente) {
+        if (raiz == null) {
+            raiz = new No(ordem);
+            raiz.inserirChave(cpf, cliente);
+        } else {
+            inserirNo(raiz, cpf, cliente);
+        }
+    }
+
+    private void inserirNo(No no, String cpf, Cliente cliente) {
+        if (no.isFolha()) {
+            no.inserirChave(cpf, cliente);
+            if (no.estaCheio()) {
+                dividirNo(no);
+            }
+        } else {
+            int posicaoFilho = no.getIndiceFilhoParaInserir(cpf);
+            inserirNo(no.getFilho(posicaoFilho), cpf, cliente);
+        }
+    }
+
+    private void dividirNo(No no) {
+        No novoNo = new No(ordem);
+
+        // Mover metade das chaves e filhos para o novo nó
+        for (int i = ordem / 2; i < ordem; i++) {
+            novoNo.inserirChave(no.getChave(i), no.getCliente(i));
+            no.removerChave(i);
+        }
+
+        // Atualizar os filhos do nó pai
+        No pai = no.getPai();
+        if (pai == null) {
+            raiz = novoNo;
+            novoNo.setPai(null);
+        } else {
+            int posicaoFilho = pai.getIndiceFilhoParaInserir(novoNo.getChave(0));
+            pai.inserirFilho(novoNo, posicaoFilho);
+        }
+
+        // Redirecionar os filhos que apontavam para o nó original para o novo nó
+        for (int i = ordem / 2; i < ordem; i++) {
+            no.getFilho(i).setPai(novoNo);
+        }
+    }
+
+    public Cliente buscarPorCpf(String cpf) {
+        No noAtual = raiz;
+        while (noAtual != null) {
+            int posicaoChave = noAtual.getIndiceChave(cpf);
+            if (posicaoChave != -1) {
+                return noAtual.getCliente(posicaoChave);
+            } else {
+                noAtual = noAtual.getFilho(posicaoChave + 1);
+            }
+        }
+        return null;
+    }
+
+    // ... (implementação de outros métodos)
+
+}
+
+public class No {
+
+    private String[] chaves;
+    private Cliente[] clientes;
+    private No[] filhos;
+    private No pai;
+    private int ordem;
+    private int numeroChaves;
+
+    public No(int ordem) {
+        this.ordem = ordem;
+        this.chaves = new String[ordem - 1];
+        this.clientes = new Cliente[ordem - 1];
+        this.filhos = new No[ordem];
+        this.pai = null;
+        this.numeroChaves = 0;
+    }
+
+    // ... (implementação dos métodos de acesso e manipulação do nó)
+
+}
+
+public class Cliente {
+
+    private String nome;
+    private String cpf;
+    // ... (outros atributos do cliente)
+
+    public Cliente(String nome, String cpf) {
+        this.nome = nome;
+        this.cpf = cpf;
+    }
+
+    // ... (implementação dos métodos de acesso e manipulação do cliente)
+
+}
